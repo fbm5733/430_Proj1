@@ -1,0 +1,26 @@
+{
+  "name": "430_proj1",
+  "version": "1.0.0",
+  "description": "Project one for 430 - Pokemon team builder API",
+  "main": "./src/server.js",
+  "scripts": {
+    "start": "node ./src/server.js",
+    "pretest": "eslint ./src --fix",
+    "test": "echo \"Tests complete\""
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/fbm5733/430_Proj1.git"
+  },
+  "author": "Fisher Meddaugh",
+  "license": "UNLICENSED",
+  "bugs": {
+    "url": "https://github.com/fbm5733/430_Proj1/issues"
+  },
+  "homepage": "https://github.com/fbm5733/430_Proj1#readme",
+  "devDependencies": {
+    "eslint": "^7.19.0",
+    "eslint-config-airbnb": "^18.2.1",
+    "eslint-plugin-import": "^2.22.1"
+  }
+}

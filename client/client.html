@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Our simple HTTP server</title>
+  <link rel="stylesheet" type="text/css" href="/style.css">
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-core/5.8.34/browser.min.js"></script>
+  <script type="text/babel">
+    const handleResponse = (xhr, parseResponse = true) => {
+
+      const content = document.querySelector("#content");
+
+      //handles each code
+      switch(xhr.status) {
+        case 200://success
+          content.innerHTML = `<b>Success</b>`;
+        break;
+        case 201: //create
+          content.innerHTML = `<b>Create</b>`;
+        break;
+        case 204://returns as an updated will not give content to show
+          content.innerHTML = `<b>Updated (No Content)</b>`;
+          return; 
+        case 400:
+          content.innerHTML = `<b>Bad Request</b>`;
+        break;
+        case 404:
+          content.innerHTML = `<b>Resource Not Found</b>`;
+        break;
+        default:
+          content.innerHTML = `<b>Error Not Implemented</b>`;
+        break;
+      }
+
+      //no content for response
+      if(!parseResponse)
+      {
+        return;
+      }
+
+      //this section updates the content with the message or users
+      let data = "";
+
+      const obj = JSON.parse(xhr.response);
+
+      //displays the message if there is one
+      if(obj.message)
+      {
+        content.innerHTML += `<p>Message: ${obj.message}</p>`;
+      }
+      //if it's users then displays that instead
+      if(obj.users)
+      {
+        content.innerHTML += `<p>${JSON.stringify(obj.users)}</p>`;
+      }
+    };
+
+    const sendGetHead = (e) => {
+      //get the url
+      const url = document.querySelector("#urlField").value;
+      //get the method
+      const method =  document.querySelector("#methodSelect").value;
+
+      const xhr = new XMLHttpRequest();
+
+      xhr.open(method, url);
+
+      xhr.setRequestHeader('Accept', 'application/json');
+
+      //sends in if you want to handle parsing (only for get)
+      if(method === "get"){
+        xhr.onload = () => handleResponse(xhr, true);
+      }
+      else{
+        xhr.onload = () => handleResponse(xhr, false);
+      }
+
+      xhr.send();
+
+      //stupidness due to being a form
+      e.preventDefault();
+      return false;
+    };
+
+    const sendPost = (e) => {
+      //get the url
+      const name = document.querySelector("#nameField").value.trim();
+      //get the method
+      const age =  document.querySelector("#ageField").value;
+
+      const xhr = new XMLHttpRequest();
+
+      xhr.open("post", "/addUser");
+
+      //sets headers for post
+      xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded')
+      xhr.setRequestHeader('Accept', 'application/json');
+
+      //handles the response
+      xhr.onload = () => handleResponse(xhr);
+
+      //creates the data and sends  it
+      const formData = `name=${name}&age=${age}`;
+
+      xhr.send(formData);
+
+      //stupidness due to being a form
+      e.preventDefault();
+      return false;
+    };
+
+    const init = () => {
+      //sets up submission events
+      document.querySelector("#nameForm").addEventListener('submit', sendPost);
+      document.querySelector("#userForm").addEventListener('submit', sendGetHead);
+    };
+
+    window.onload = init;
+
+  </script>
+</head>
+<body>
+  <section id="top">
+    <h3>POST Status Code Tests</h3>
+    <form id="nameForm" action="/addUser" method="post">
+      <label for="name">Name: </label>
+      <input id="nameField" type="text" name="name" />
+      <label for="age">Age: </label>
+      <input id="ageField" type="number" name="age" min="0" max="100" step="1"/>
+      <input type="submit" value="Add User" />
+    </form>
+    <form id="userForm" action="/getUsers" method="get">
+      <select id='urlField'>
+        <option value='/getUsers'>/getUsers</option>
+        <option value='/notReal'>/notReal</option>
+      </select>
+      <select id="methodSelect">
+        <option value="get">GET</option>
+        <option value="head">HEAD</option>
+      </select>
+      <input type="submit" value="Get User" />
+    </form>
+  </section>
+  <section id="content">
+  </section>
+</body>
+</html>
