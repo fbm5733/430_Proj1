@@ -153,9 +153,8 @@ const postTeam = (request, response) => {
     let status = 201;
 
     // change code if it exists, id based for easy checking
-    if (Object.hasOwnProperty.call(params, 'id')) {
+    if (Object.prototype.hasOwnProperty.call(params, 'id')) {
       status = 204;
-      console.log('e');
     } else {
       params.id = Object.keys(teams).length;
     }

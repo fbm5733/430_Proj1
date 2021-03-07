@@ -6,6 +6,10 @@
   
   <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-core/5.8.34/browser.min.js"></script>
   <script type="text/babel">
+
+    //temporary counter for debugging, this increases when updating a team
+    let debugCounter = 1;
+
     const handleResponse = (xhr, parseResponse = true) => {
 
       const content = document.querySelector("#content");
@@ -57,23 +61,16 @@
 
     const sendGetHead = (e) => {
       //get the url
-      const url = document.querySelector("#urlField").value;
-      //get the method
-      const method =  document.querySelector("#methodSelect").value;
+      const url = document.querySelector("#getSelect").value;
 
       const xhr = new XMLHttpRequest();
 
-      xhr.open(method, url);
+      xhr.open("get", url);
 
       xhr.setRequestHeader('Accept', 'application/json');
 
-      //sends in if you want to handle parsing (only for get)
-      if(method === "get"){
-        xhr.onload = () => handleResponse(xhr, true);
-      }
-      else{
-        xhr.onload = () => handleResponse(xhr, false);
-      }
+      //sets up load event
+      xhr.onload = () => handleResponse(xhr, true);
 
       xhr.send();
 
@@ -83,10 +80,8 @@
     };
 
     const sendPost = (e) => {
-      //get the url
-      const name = document.querySelector("#nameField").value.trim();
-      //get the method
-      const age =  document.querySelector("#ageField").value;
+      //get if you're creating a new one (debug only)
+      const newTeam = document.querySelector("#postSelect").value;
 
       const xhr = new XMLHttpRequest();
 
@@ -101,7 +96,7 @@
 
       //creates the data and sends it
       const jsonData = {
-        name: "Team 2",
+        name: "New Team",
         members: [
           {
             number: 400,
@@ -116,6 +111,13 @@
         ] //end members
       }; //end json
 
+      //id sets to 0 if you want to update the first one. Again, debug only stuff
+      if(newTeam === "update") {
+        jsonData.id = 0;
+        jsonData.name = `Update number ${debugCounter}`;
+        debugCounter++;
+      }
+
       xhr.send(JSON.stringify(jsonData));
 
       //stupidness due to being a form
@@ -125,8 +127,8 @@
 
     const init = () => {
       //sets up submission events
-      document.querySelector("#nameForm").addEventListener('submit', sendPost);
-      document.querySelector("#userForm").addEventListener('submit', sendGetHead);
+      document.querySelector("#postForm").addEventListener('submit', sendPost);
+      document.querySelector("#getForm").addEventListener('submit', sendGetHead);
     };
 
     window.onload = init;
@@ -135,24 +137,23 @@
 </head>
 <body>
   <section id="top">
-    <h3>POST Status Code Tests</h3>
-    <form id="nameForm" action="/addUser" method="post">
-      <label for="name">Name: </label>
-      <input id="nameField" type="text" name="name" />
-      <label for="age">Age: </label>
-      <input id="ageField" type="number" name="age" min="0" max="100" step="1"/>
-      <input type="submit" value="Add User" />
+    <h3>The data is formatted to work with the PokeAPI's data, as the project will be a teambuilder.<br/> 
+      Currently this data isn't set up, but my own API still has functinality of its own.<br/>
+      The functionality here is just to show what I've done so far with my API, not at all final.<br/>
+      It's somewhat small of a project right now as I have had a really busy past week.</h3>
+    <form id="getForm" action="/getTeams" method="get">
+      <select id='getSelect'>
+        <option value='/getTeams'>All Teams</option>
+        <option value='/getTeam?id=0'>Index 0</option>
+      </select>
+      <input type="submit" value="Get Team(s)" />
     </form>
-    <form id="userForm" action="/getTeams" method="get">
-      <select id='urlField'>
-        <option value='/getTeams'>/getUsers</option>
-        <option value='/notReal'>/notReal</option>
+    <form id="postForm" action="/postTeam" method="post">
+      <select id="postSelect">
+        <option value="new">New Team</option>
+        <option value="update">Update Team 1</option>
       </select>
-      <select id="methodSelect">
-        <option value="get">GET</option>
-        <option value="head">HEAD</option>
-      </select>
-      <input type="submit" value="Get User" />
+      <input type="submit" value="Post Team" />
     </form>
   </section>
   <section id="content">
