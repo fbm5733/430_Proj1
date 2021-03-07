@@ -1,7 +1,22 @@
-const query = require('querystring');
-
-// users json object
-const users = {};
+// teams json object
+const teams = {
+  0: {
+    name: 'Team 1',
+    members: [
+      {
+        number: 399,
+        ability: 1,
+        moves: [1, 2, 8],
+      }, // end of member 1
+      {
+        number: 129,
+        ability: 0,
+        moves: [3, 2, 1, 0],
+      }, // end of member 2
+    ], // end of members array
+    id: 0,
+  }, // end of team of index 0
+}; // end of object
 
 // general JSON response function
 const respondJSON = (request, response, status, obj) => {
@@ -28,10 +43,10 @@ const respondMeta = (request, response, status) => {
   response.end();
 };
 
-const getUsers = (request, response) => {
+const getTeams = (request, response) => {
   // json object to respond with
   const obj = {
-    users,
+    teams,
   };
 
   // return with the respondJSON function
@@ -39,7 +54,49 @@ const getUsers = (request, response) => {
 };
 
 // only returns a 200 code
-const getUsersMeta = (request, response) => respondMeta(request, response, 200);
+const getTeamsMeta = (request, response) => respondMeta(request, response, 200);
+
+// sends a single team or an error
+const getTeam = (request, response, params) => {
+  // sets default status
+  let status = 400;
+
+  // starts building the oject
+  const obj = {};
+
+  // paramseter is missing (includes 0 check because 0 is falsey)
+  if (!params.id && params.id === 0) {
+    obj.message = "The parameter 'id' is required.";
+    obj.id = 'missingParams';
+  // parameter is there, but the team isn't one that is real
+  } else if (!teams[params.id]) {
+    status = 400;
+    obj.message = `There is no team with id ${params.id}.`;
+    obj.id = 'badParams';
+  // correct request
+  } else {
+    status = 200;
+    obj.teams = teams[params.id];
+  }
+
+  // return with the respondJSON function
+  return respondJSON(request, response, status, obj);
+};
+
+// only code depending on if the request would work or not
+const getTeamMeta = (request, response, params) => {
+  // sets default status
+  let status = 200;
+
+  // paramseter is missing (includes 0 check because 0 is falsey)
+  // combines in the team check since the code is the same
+  if ((!params.id && params.id === 0) || !teams[params.id]) {
+    status = 400;
+  }
+
+  // return with the respondMeta function
+  return respondMeta(request, response, status);
+};
 
 const getNotFound = (request, response) => {
   // the response will instead be a json object with an error message and id
@@ -56,7 +113,7 @@ const getNotFound = (request, response) => {
 const getNotFoundMeta = (request, response) => respondMeta(request, response, 404);
 
 // initiates the post
-const postUser = (request, response) => {
+const postTeam = (request, response) => {
   // body of all the data that is being reassembled
   const body = [];
 
@@ -77,15 +134,17 @@ const postUser = (request, response) => {
     // turns it into a whole string
     const data = Buffer.concat(body).toString();
     // gets the params using the x-www-form-urlencoded data
-    const params = query.parse(data);
+    const params = JSON.parse(data);
 
     // object including the message to send back
     const responseJSON = {
-      message: 'Name and age are both required.',
+      message: 'Either a team name or at least one team member is required.',
     };
 
-    // if either parameter is missing then it's an error
-    if (!params.name || !params.age || params.name === '' || params.age === '') {
+    // basically only a bad request if the user gives us nothing
+    // we can allow empty teams
+    // if a team is made we can allow it to be saved and make a default name
+    if ((!params.name && !params.members) || (!params.name && params.members.count <= 0)) {
       responseJSON.id = 'missingParams';
       return respondJSON(request, response, 400, responseJSON);
     }
@@ -93,16 +152,16 @@ const postUser = (request, response) => {
     // next default it to creating a new one
     let status = 201;
 
-    // change code if it exists, if it doesn't then create it
-    if (users[params.name]) {
+    // change code if it exists, id based for easy checking
+    if (Object.hasOwnProperty.call(params, 'id')) {
       status = 204;
+      console.log('e');
     } else {
-      users[params.name] = {};
+      params.id = Object.keys(teams).length;
     }
 
     // either adds or updates
-    users[params.name].name = params.name;
-    users[params.name].age = params.age;
+    teams[params.id] = params;
 
     // sends the response for if it was created
     if (status === 201) {
@@ -116,9 +175,11 @@ const postUser = (request, response) => {
 };
 
 module.exports = {
-  getUsers,
-  getUsersMeta,
+  getTeams,
+  getTeamsMeta,
+  getTeam,
+  getTeamMeta,
   getNotFound,
   getNotFoundMeta,
-  postUser,
+  postTeam,
 };

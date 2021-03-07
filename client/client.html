@@ -49,9 +49,9 @@
         content.innerHTML += `<p>Message: ${obj.message}</p>`;
       }
       //if it's users then displays that instead
-      if(obj.users)
+      if(obj.teams)
       {
-        content.innerHTML += `<p>${JSON.stringify(obj.users)}</p>`;
+        content.innerHTML += `<p>${JSON.stringify(obj.teams)}</p>`;
       }
     };
 
@@ -90,19 +90,33 @@
 
       const xhr = new XMLHttpRequest();
 
-      xhr.open("post", "/addUser");
+      xhr.open("post", "/postTeam");
 
       //sets headers for post
-      xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded')
+      xhr.setRequestHeader('Content-type', 'application/json')
       xhr.setRequestHeader('Accept', 'application/json');
 
       //handles the response
       xhr.onload = () => handleResponse(xhr);
 
-      //creates the data and sends  it
-      const formData = `name=${name}&age=${age}`;
+      //creates the data and sends it
+      const jsonData = {
+        name: "Team 2",
+        members: [
+          {
+            number: 400,
+            ability: 0,
+            moves: [1, 2, 8]
+          }, //end of member 1
+          {
+            number: 130,
+            ability: 1,
+            moves: [3, 2, 1, 0]
+          } //end member 1
+        ] //end members
+      }; //end json
 
-      xhr.send(formData);
+      xhr.send(JSON.stringify(jsonData));
 
       //stupidness due to being a form
       e.preventDefault();
@@ -129,9 +143,9 @@
       <input id="ageField" type="number" name="age" min="0" max="100" step="1"/>
       <input type="submit" value="Add User" />
     </form>
-    <form id="userForm" action="/getUsers" method="get">
+    <form id="userForm" action="/getTeams" method="get">
       <select id='urlField'>
-        <option value='/getUsers'>/getUsers</option>
+        <option value='/getTeams'>/getUsers</option>
         <option value='/notReal'>/notReal</option>
       </select>
       <select id="methodSelect">

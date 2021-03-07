@@ -1,5 +1,6 @@
 const http = require('http');
 const url = require('url');
+const query = require('querystring');
 const htmlHandler = require('./htmlResponses.js');
 const cssHandler = require('./cssResponses.js');
 const jsonHandler = require('./jsonResponses.js');
@@ -10,17 +11,17 @@ const urlStruct = {
   GET: {
     '/': htmlHandler.getIndex,
     '/style.css': cssHandler.getCSS,
-    '/getUsers': jsonHandler.getUsers,
-    '/notReal': jsonHandler.getNotFound,
+    '/getTeams': jsonHandler.getTeams,
+    '/getTeam': jsonHandler.getTeam,
     notFound: jsonHandler.getNotFound,
   },
   HEAD: {
-    '/getUsers': jsonHandler.getUsersMeta,
-    '/notReal': jsonHandler.getNotFoundMeta,
+    '/getTeams': jsonHandler.getTeamsMeta,
+    '/getTeam': jsonHandler.getTeamMeta,
     notFound: jsonHandler.getNotFoundMeta,
   },
   POST: {
-    '/addUser': jsonHandler.postUser,
+    '/postTeam': jsonHandler.postTeam,
     notFound: jsonHandler.getNotFound,
   },
 };
@@ -28,12 +29,15 @@ const urlStruct = {
 const onRequest = (request, response) => {
   const parsedUrl = url.parse(request.url);
 
+  // query parameters
+  const params = query.parse(parsedUrl.query);
+
   // checks if it is a post, then if not,
   // calls the correct thing based on the struct
   if (urlStruct[request.method][parsedUrl.pathname]) {
-    urlStruct[request.method][parsedUrl.pathname](request, response);
+    urlStruct[request.method][parsedUrl.pathname](request, response, params);
   } else {
-    urlStruct[request.method].notFound(request, response);
+    urlStruct[request.method].notFound(request, response, params);
   }
 };
 
