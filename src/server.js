@@ -2,7 +2,7 @@ const http = require('http');
 const url = require('url');
 const query = require('querystring');
 const htmlHandler = require('./htmlResponses.js');
-const cssJsHandler = require('./cssScriptResponses.js');
+const cssHandler = require('./cssResponses.js');
 const jsonHandler = require('./jsonResponses.js');
 
 const port = process.env.PORT || process.env.NODE_PORT || 3000;
@@ -10,8 +10,7 @@ const port = process.env.PORT || process.env.NODE_PORT || 3000;
 const urlStruct = {
   GET: {
     '/': htmlHandler.getIndex,
-    '/style.css': cssJsHandler.getCSS,
-    '/main.js': cssJsHandler.getJS,
+    '/style.css': cssHandler.getCSS,
     '/getTeams': jsonHandler.getTeams,
     '/getTeam': jsonHandler.getTeam,
     notFound: jsonHandler.getNotFound,
@@ -28,7 +27,6 @@ const urlStruct = {
 };
 
 const onRequest = (request, response) => {
-
   const parsedUrl = url.parse(request.url);
   console.log(parsedUrl.pathname);
 
