@@ -9,11 +9,15 @@ const teams = {
     name: 'Team 1',
     members: [
       {
+        name: 'bidoof',
+        image: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/399.png',
         number: 399,
         ability: 1,
         moves: [1, 2, 8],
       }, // end of member 1
       {
+        name: 'magikarp',
+        image: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/129.png',
         number: 129,
         ability: 0,
         moves: [3, 2, 1, 0],
@@ -52,6 +56,7 @@ const getTeams = (request, response) => {
   // json object to respond with
   const obj = {
     teams,
+    type: 'allTeams',
   };
 
   // return with the respondJSON function
@@ -75,12 +80,12 @@ const getTeam = (request, response, params) => {
     obj.id = 'missingParams';
   // parameter is there, but the team isn't one that is real
   } else if (!teams[params.id]) {
-    status = 400;
     obj.message = `There is no team with id ${params.id}.`;
     obj.id = 'badParams';
   // correct request
   } else {
     status = 200;
+    obj.type = 'singleTeam';
     obj.teams = {};
 
     // this will decrement every time that a pokemon is added to the teams part of the obj
@@ -93,13 +98,14 @@ const getTeam = (request, response, params) => {
       const member = teams[params.id].members[i];
 
       // gets all the pokemon and calls a callback function each time
+      // the callback takes advantage of the closure of the for loop it's created within
       P.getPokemonByName(member.number, (res, error) => { // callback function
         if (!error) {
           // success, set the name
           obj.teams[i] = res.name;
         } else {
           // failed, give an error
-          obj.teams[i] = error;
+          obj.teams[i] = 'Error';
         }
 
         // decrement each time that one finishes
@@ -111,8 +117,7 @@ const getTeam = (request, response, params) => {
         }
       });
     }
-
-    return null;
+    return null; // return null, prevents bubbling but still waits for the rest to be done.
   }
 
   // return with the respondJSON function

@@ -3,6 +3,9 @@ html, body {
   width: 100%;
   margin: 0;
   padding: 0;
+  background-color: rgb(209, 252, 253);
+  color: #012169;
+  font-family: Arial, Helvetica, sans-serif;
 }
 
 #top {
@@ -18,4 +21,88 @@ html, body {
   margin-top: 100px;
   font-size: 2em;
   text-align: center;
+}
+
+#teamFlex, #title {
+  text-align: center;
+  background-color: rgb(161, 253, 255);
+  border-radius: 30px;
+  border: 5px solid #012169 ;
+  width: 80%;
+  margin: 30px auto;
+  padding: 30px;
+}
+
+#title {
+  width: fit-content;
+}
+
+#teamFlex {
+  display: flex;
+  flex-direction: column;
+  text-align: center;
+}
+
+.team {
+  background-color: rgb(117, 253, 255);
+  border-radius: 30px;
+  border: 5px solid #012169;
+  width: 80%;
+  max-width: 750px;
+  margin: 30px auto;
+  padding: 30px;
+  height: fit-content;
+  cursor: pointer;
+}
+
+.team:hover {
+  background-color: rgb(103, 229, 231);
+}
+
+.team:active {
+  background-color: rgb(68, 207, 209);
+}
+
+.innerTeam {
+  display: flex;
+  flex-direction: row;
+  flex-flow: wrap;
+  justify-content: space-between;
+}
+
+.teamMember {
+  width: 30%;
+  height: fit-content;
+}
+
+.teamMember img {
+  max-width: 100%;
+  object-fit: cover;
+  background-color: #f3ffae;
+  border-radius: 15px;
+}
+
+.teamMember h3 {
+  margin-top: 0px;
+}
+
+.newTeam{
+  text-align: center;
+	width:100px;
+	height:100px;
+	background-color:#3A28A8;
+	color:#D6EBFF;
+	border-radius:50px;
+  text-align:center;
+  box-shadow: 5px 5px 5px #3928a856;
+  text-decoration: none;
+  font-size: 4rem;
+  font-weight: 800;
+  margin: 0px auto;
+}
+
+.newTeam:hover{
+    background-color: #012169;
+    box-shadow: 5px 5px 5px#3928a856;
+    color: #a6b6c5;
 }
