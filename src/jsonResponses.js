@@ -1,3 +1,8 @@
+// creates the pokedex object
+const Pokedex = require('pokedex-promise-v2');
+
+const P = new Pokedex();
+
 // teams json object
 const teams = {
   0: {
@@ -64,8 +69,8 @@ const getTeam = (request, response, params) => {
   // starts building the oject
   const obj = {};
 
-  // paramseter is missing (includes 0 check because 0 is falsey)
-  if (!params.id && params.id === 0) {
+  // parameter is missing (includes 0 check because 0 is falsey)
+  if (!params.id && params.id !== 0) {
     obj.message = "The parameter 'id' is required.";
     obj.id = 'missingParams';
   // parameter is there, but the team isn't one that is real
@@ -76,7 +81,38 @@ const getTeam = (request, response, params) => {
   // correct request
   } else {
     status = 200;
-    obj.teams = teams[params.id];
+    obj.teams = {};
+
+    // this will decrement every time that a pokemon is added to the teams part of the obj
+    // This will let it check for when it's done and respond appropriately.
+    obj.notDone = teams[params.id].members.length;
+
+    // iterate through the team members and find their names using the Pokedex,
+    // adding them to the object when they are found.
+    for (let i = 0; i < teams[params.id].members.length; i++) {
+      const member = teams[params.id].members[i];
+
+      // gets all the pokemon and calls a callback function each time
+      P.getPokemonByName(member.number, (res, error) => { // callback function
+        if (!error) {
+          // success, set the name
+          obj.teams[i] = res.name;
+        } else {
+          // failed, give an error
+          obj.teams[i] = error;
+        }
+
+        // decrement each time that one finishes
+        obj.notDone -= 1;
+
+        // respond when all the names have been recieved
+        if (obj.notDone === 0) {
+          respondJSON(request, response, status, obj);
+        }
+      });
+    }
+
+    return null;
   }
 
   // return with the respondJSON function
