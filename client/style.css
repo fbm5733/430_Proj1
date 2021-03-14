@@ -78,6 +78,7 @@ html, body {
   width: 30%;
   height: fit-content;
   margin-bottom: 20px;
+  position: relative;
 }
 
 .teamMember img, .teamMemberEdit img {
@@ -85,21 +86,24 @@ html, body {
   object-fit: cover;
   background-color: #f3ffae;
   border-radius: 15px;
+  z-index: 4;
 }
 
 .teamMember h3, .teamMemberEdit h3 {
   margin: 0px;
 }
 
-.teamMemberEdit:hover img {
-  background-color: #ebff7b;
-}
-.teamMemberEdit:hover {
+.teamMemberEdit:hover:after {
   cursor: pointer;
-  border: 3px solid black;
-  border-radius: 20px;
-  box-sizing: border-box;
+  border-radius: 15px;
   background-color: rgba(0, 0, 0, 0.2);
+  z-index: 5;
+  position:absolute;
+  content: '';
+  top:0;
+  right: 0;
+  left: 0;
+  bottom: 0;
 }
 
 .newTeam, .saveTeam{

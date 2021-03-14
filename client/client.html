@@ -58,7 +58,7 @@
             //create the team div
             let teamDiv = document.createElement("div");
             teamDiv.className = "team";
-            teamDiv.id = teamObj.id;
+            teamDiv.id = `t${teamObj.id}`;
             teamDiv.onclick = (e) => { sendGet(`/getTeam?id=${teamObj.id}`); };
             
             //create the team name
@@ -160,7 +160,7 @@
         //creates the team member
         let teamMember = document.createElement("div");
         teamMember.className = "teamMemberEdit";
-        teamMember.id = j;
+        teamMember.id = `m${j}`; //m1, m2, etc. stand for Member1, Member2, etc
         teamMember.onclick = editMember;
         //edit screen for team member
 
@@ -216,15 +216,16 @@
     //picks the member and sends the request
     const editMember = (e) => {
       //sets the member we're working with
-      currentSpecies = {id: e.currentTarget.id};
-      let member = currentTeam.members[e.currentTarget.id];
+      let id = e.currentTarget.id.substring(1);
+      currentSpecies = {id: id};
+      let member = currentTeam.members[id];
 
       if(member) {
         currentSpecies.selections = member;
-        sendGet(`/getSpeciesData?species=${member.name}&id=${e.currentTarget.id}&newSpecies=no`);
+        sendGet(`/getSpeciesData?species=${member.name}&id=${id}&newSpecies=no`);
       }
       else {
-        showSpeciesData({id: e.currentTarget.id})
+        showSpeciesData({id: id})
       }
     }
 
@@ -245,8 +246,8 @@
         }
 
         //change the image and name
-        let img = document.querySelector(`#${obj.id} img`);
-        let h3 = document.querySelector(`#${obj.id} h3`);
+        let img = document.querySelector(`#m${obj.id} img`);
+        let h3 = document.querySelector(`#m${obj.id} h3`);
         img.src = newObj.image;
         img.alt = newObj.name;
         h3.textContent = newObj.name;
@@ -270,7 +271,7 @@
       let speciesSearch = document.createElement("input");
       speciesSearch.className = "search";
       speciesSearch.onchange = (e) => {
-        sendGet(`/speciesSearch?q=${e.target.value}`);
+        sendGet(`/speciesSearch?q=${encodeURIComponent(e.target.value)}`);
       }
       speciesDiv.append(speciesSearch);
       
@@ -278,14 +279,19 @@
       let speciesSelect = document.createElement("select");
       speciesSelect.className = "select";
       speciesSelect.id = "speciesSelect"
-      speciesSelect.onchange = (e) => {
-        //changes the species
-        sendGet(`/getSpeciesData?species=${e.target.value}&id=${obj.id}&newSpecies=yes`);
-      }
       speciesDiv.append(speciesSelect);
+
+      //option to display that the possible options are loading
+      let option = document.createElement("option");
+      option.value = "";
+      option.textContent = "Loading...";
+      speciesSelect.onchange = null;
 
       detailsDiv.append(speciesDiv);
       detailsDiv.style.display = 'block';
+
+      //dispatch event so the select list is filled
+      speciesSearch.dispatchEvent(new Event("change"));
 
       //if there's no data, then just ask for a pokemon
       if(!data) {
@@ -295,6 +301,38 @@
       //if there is, do everything else
       speciesSelect.value = data.name;
       speciesSearch.value = data.name;
+    }
+
+    //pupulates the select list
+    const speciesSelectFunc = (obj) => {
+      //makes sure it exists still first
+      let speciesSelectList = document.querySelector("#speciesSelect");
+      let results = obj.results;
+      if(speciesSelectList && results && results.length > 0) {
+        //adds each option to the select list
+        speciesSelectList.innerHTML = "";
+        for(let i=0;i<results.length;i++) {
+          let option = document.createElement("option");
+          option.value = results[i];
+          option.textContent = results[i];
+          speciesSelectList.append(option);
+          speciesSelectList.onchange = (e) => {
+            //changes the species
+            sendGet(`/getSpeciesData?species=${e.target.value}&id=${currentSpecies.id}&newSpecies=yes`);
+          }
+          //if there's a selected species then set the current value
+          if(currentSpecies.selections) speciesSelectList.value = currentSpecies.selections.name;
+        }
+      } else if (speciesSelectList) {
+        //don't have an onchange if it's null
+        speciesSelectList.innerHTML = "";
+        let option = document.createElement("option");
+        option.value = "";
+        option.textContent = "No Results Found";
+        speciesSelectList.append(option);
+        speciesSelectList.value = "";
+        speciesSelectList.onchange = null;
+      }
     }
 
     //sends a get request with any url passed in
@@ -366,6 +404,7 @@
             "allTeams" : handleTeams,
             "singleTeam" : teamCreateScreen,
             "speciesData" : showSpeciesData,
+            "speciesSearch" : speciesSelectFunc,
         };
 
         //sends a request to get all the teams to display them

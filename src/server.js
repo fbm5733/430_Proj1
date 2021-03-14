@@ -16,12 +16,14 @@ const urlStruct = {
     '/getTeams': jsonHandler.getTeams,
     '/getTeam': jsonHandler.getTeam,
     '/getSpeciesData': jsonHandler.getSpeciesData,
+    '/speciesSearch': jsonHandler.speciesSearch,
     notFound: jsonHandler.getNotFound,
   },
   HEAD: {
     '/getTeams': jsonHandler.getTeamsMeta,
     '/getTeam': jsonHandler.getTeamMeta,
     '/getSpeciesData': jsonHandler.getSpeciesDataMeta,
+    '/speciesSearch': jsonHandler.speciesSearchMeta,
     notFound: jsonHandler.getNotFoundMeta,
   },
   POST: {

@@ -52,6 +52,34 @@ const respondMeta = (request, response, status) => {
   response.end();
 };
 
+const speciesSearch = (request, response, params) => {
+  const status = 200;
+
+  // sets the string that will be searched for in all pokemon names
+  let searchString = '';
+  if (params.q) searchString = decodeURIComponent(params.q).trim();
+
+  const obj = { type: 'speciesSearch' };
+
+  P.getPokemonsList({ limit: 100000, offset: 0 }, (res, error) => {
+    if (!error) {
+      // filters it out so it's just an array of every name that includes what was searched for
+      obj.results = res.results
+        .map((species) => species.name)
+        .filter((name) => name.includes(searchString));
+      // write response
+      respondJSON(request, response, status, obj);
+    } else {
+      // just act as if there were no matches
+      obj.results = [];
+      respondJSON(request, response, status, obj);
+    }
+  });
+};
+
+// the species search still always will give a success, as it just gives an empty array if it fails
+const speciesSearchMeta = (request, response) => respondMeta(request, response, 200);
+
 const getSpeciesData = (request, response, params) => {
   // sets default status
   let status = 400;
@@ -81,7 +109,6 @@ const getSpeciesData = (request, response, params) => {
         obj.data = res;
       } else {
         // failed, give an error
-        console.log(error);
         obj.data = null;
       }
       respondJSON(request, response, status, obj);
@@ -174,7 +201,6 @@ const getTeam = (request, response, params) => {
           obj.members[i] = newMember;
         } else {
           // failed, give an error
-          console.log(error);
           obj.members[i] = null;
         }
 
@@ -296,4 +322,6 @@ module.exports = {
   postTeam,
   getSpeciesData,
   getSpeciesDataMeta,
+  speciesSearch,
+  speciesSearchMeta,
 };
