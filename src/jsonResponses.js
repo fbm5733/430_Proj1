@@ -52,6 +52,58 @@ const respondMeta = (request, response, status) => {
   response.end();
 };
 
+const getSpeciesData = (request, response, params) => {
+  // sets default status
+  let status = 400;
+
+  // starts building the oject
+  const obj = {};
+
+  // parameter is missing (includes 0 check because 0 is falsey)
+  if ((!params.id && params.id !== 0) || (!params.species && params.species !== 0)) {
+    obj.message = "The parameters 'id' and 'species' are required.";
+    obj.id = 'missingParams';
+    // correct request
+  } else {
+    status = 200;
+    obj.type = 'speciesData';
+    obj.id = params.id;
+
+    // newSpecies parameter is for if you need to reset all the values of the pokemon
+    if (params.newSpecies) {
+      obj.newSpecies = params.newSpecies;
+    }
+
+    // finds the species given
+    P.getPokemonByName(params.species, (res, error) => { // callback function
+      if (!error) {
+        // success, set the object
+        obj.data = res;
+      } else {
+        // failed, give an error
+        console.log(error);
+        obj.data = null;
+      }
+      respondJSON(request, response, status, obj);
+    });
+    return null;
+  }
+
+  return respondJSON(request, response, status, obj);
+};
+
+const getSpeciesDataMeta = (request, response, params) => {
+  let status = 200;
+
+  // parameter is missing (includes 0 check because 0 is falsey)
+  if ((!params.id && params.id !== 0) || (!params.species && params.species !== 0)) {
+    status = 400;
+  }
+
+  // return with the respondMeta function
+  return respondMeta(request, response, status);
+};
+
 const getTeams = (request, response) => {
   // json object to respond with
   const obj = {
@@ -86,7 +138,9 @@ const getTeam = (request, response, params) => {
   } else {
     status = 200;
     obj.type = 'singleTeam';
-    obj.teams = {};
+    obj.members = {};
+    obj.name = teams[params.id].name;
+    obj.id = params.id;
 
     // this will decrement every time that a pokemon is added to the teams part of the obj
     // This will let it check for when it's done and respond appropriately.
@@ -101,11 +155,27 @@ const getTeam = (request, response, params) => {
       // the callback takes advantage of the closure of the for loop it's created within
       P.getPokemonByName(member.number, (res, error) => { // callback function
         if (!error) {
-          // success, set the name
-          obj.teams[i] = res.name;
+          const newMember = {};
+
+          newMember.name = res.name; // sets the name
+          newMember.image = res.sprites.other['official-artwork'].front_default; // sets the image
+          newMember.ability = res.abilities[member.ability].ability.name; // sets the ability
+          newMember.moves = []; // sets the moves to empty
+          // adds each move
+          for (let j = 0; j < member.moves.length; j++) {
+            newMember.moves[j] = res.moves[member.moves[j]].move.name;
+          }
+          // sets the values (the plain numbers)
+          newMember.moveValues = member.moves;
+          newMember.abilityValue = member.ability;
+          newMember.number = member.number;
+
+          // success, set the object
+          obj.members[i] = newMember;
         } else {
           // failed, give an error
-          obj.teams[i] = 'Error';
+          console.log(error);
+          obj.members[i] = null;
         }
 
         // decrement each time that one finishes
@@ -194,7 +264,8 @@ const postTeam = (request, response) => {
     let status = 201;
 
     // change code if it exists, id based for easy checking
-    if (Object.prototype.hasOwnProperty.call(params, 'id')) {
+    // the second check is for if you try editing something and the server refreshes
+    if ((params.id || params.id === 0) && params.id < Object.keys(teams).length) {
       status = 204;
     } else {
       params.id = Object.keys(teams).length;
@@ -206,6 +277,7 @@ const postTeam = (request, response) => {
     // sends the response for if it was created
     if (status === 201) {
       responseJSON.message = 'Created Successfully';
+      responseJSON.type = 'create';
       return respondJSON(request, response, status, responseJSON);
     }
 
@@ -222,4 +294,6 @@ module.exports = {
   getNotFound,
   getNotFoundMeta,
   postTeam,
+  getSpeciesData,
+  getSpeciesDataMeta,
 };

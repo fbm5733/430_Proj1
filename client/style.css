@@ -43,7 +43,7 @@ html, body {
   text-align: center;
 }
 
-.team {
+.team, .teamPage{
   background-color: rgb(117, 253, 255);
   border-radius: 30px;
   border: 5px solid #012169;
@@ -53,6 +53,10 @@ html, body {
   padding: 30px;
   height: fit-content;
   cursor: pointer;
+}
+
+.teamPage {
+  cursor:default;
 }
 
 .team:hover {
@@ -70,28 +74,40 @@ html, body {
   justify-content: space-between;
 }
 
-.teamMember {
+.teamMember, .teamMemberEdit {
   width: 30%;
   height: fit-content;
+  margin-bottom: 20px;
 }
 
-.teamMember img {
+.teamMember img, .teamMemberEdit img {
   max-width: 100%;
   object-fit: cover;
   background-color: #f3ffae;
   border-radius: 15px;
 }
 
-.teamMember h3 {
-  margin-top: 0px;
+.teamMember h3, .teamMemberEdit h3 {
+  margin: 0px;
 }
 
-.newTeam{
+.teamMemberEdit:hover img {
+  background-color: #ebff7b;
+}
+.teamMemberEdit:hover {
+  cursor: pointer;
+  border: 3px solid black;
+  border-radius: 20px;
+  box-sizing: border-box;
+  background-color: rgba(0, 0, 0, 0.2);
+}
+
+.newTeam, .saveTeam{
   text-align: center;
 	width:100px;
 	height:100px;
 	background-color:#3A28A8;
-	color:#D6EBFF;
+	color:#f1f6fa;
 	border-radius:50px;
   text-align:center;
   box-shadow: 5px 5px 5px #3928a856;
@@ -99,10 +115,19 @@ html, body {
   font-size: 4rem;
   font-weight: 800;
   margin: 0px auto;
+  cursor: pointer;
 }
 
-.newTeam:hover{
+.saveTeam {
+  width: 300px;
+}
+
+.newTeam:hover, .saveTeam:hover{
     background-color: #012169;
     box-shadow: 5px 5px 5px#3928a856;
     color: #a6b6c5;
+}
+
+h3 {
+  text-transform: capitalize;
 }

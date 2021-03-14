@@ -15,11 +15,13 @@ const urlStruct = {
     '/transparent.gif': imgHandler.getTransparent,
     '/getTeams': jsonHandler.getTeams,
     '/getTeam': jsonHandler.getTeam,
+    '/getSpeciesData': jsonHandler.getSpeciesData,
     notFound: jsonHandler.getNotFound,
   },
   HEAD: {
     '/getTeams': jsonHandler.getTeamsMeta,
     '/getTeam': jsonHandler.getTeamMeta,
+    '/getSpeciesData': jsonHandler.getSpeciesDataMeta,
     notFound: jsonHandler.getNotFoundMeta,
   },
   POST: {
@@ -30,7 +32,6 @@ const urlStruct = {
 
 const onRequest = (request, response) => {
   const parsedUrl = url.parse(request.url);
-  console.log(parsedUrl.pathname);
 
   // query parameters
   const params = query.parse(parsedUrl.query);
