@@ -23,3 +23,6 @@ my code a bit. It's well commented but there are things that could follow DRY mo
 My above and beyond was the usage of the API, especially that I used the npm install version of it, and
 that I did all the API work through my own API. The formatting of all this data into the way that I wanted to
 use it, and the searching function through every species were also things I'm proud of.
+
+The only code directly borrowed was from the pokeAPI page linked here.
+https://github.com/PokeAPI/pokedex-promise-v2

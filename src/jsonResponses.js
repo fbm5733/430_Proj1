@@ -1,6 +1,6 @@
 // creates the pokedex object
 
-//https://github.com/PokeAPI/pokedex-promise-v2
+// https://github.com/PokeAPI/pokedex-promise-v2
 const Pokedex = require('pokedex-promise-v2');
 
 const P = new Pokedex();
