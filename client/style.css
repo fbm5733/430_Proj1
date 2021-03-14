@@ -44,6 +44,7 @@ html, body {
   padding: 30px;
   height: fit-content;
   cursor: pointer;
+  text-align: center;
 }
 
 .teamPage {
@@ -125,4 +126,49 @@ html, body {
 
 h3 {
   text-transform: capitalize;
+}
+
+#nameInput {
+  font-size: 2rem;
+  margin-bottom: 20px;
+  border-radius: 10px;
+}
+
+#detailsDiv {
+  padding: 0px;
+  text-align: center;
+}
+
+.question {
+  width: 85%;
+  text-overflow: none;
+  display: flex;
+  justify-content: space-between;
+  margin: 15px auto 15px auto;
+  padding: 10px;
+  border: 3px solid #f7d117;
+  border-radius: 20px;
+  background-color: #f3ffae;
+  align-items: center;
+}
+
+.label {
+  font-weight: bold;
+  font-size: 1.3rem;
+  width: 30%;
+}
+
+.search {
+  font-size: 1.5rem;
+  width: 30%;
+  border-radius: 10px;
+}
+
+.select {
+  font-size: 1.5rem;
+  text-transform: capitalize;
+  width: 30%;
+  border-radius: 10px;
+  background-color: #f7d117;
+  border: 3px solid #012169;
 }

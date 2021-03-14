@@ -1,0 +1,25 @@
+My site is a pokemon team builder for people to create teams for the world to see on the web.
+It uses the pokeApi, specifically the dependency for node : https://github.com/PokeAPI/pokedex-promise-v2
+
+My API handles the storing and recieving of all team data, and within that code is also
+the calls to the pokemon API, essentially my server acts as a middleman here as well.
+
+What went right? 
+	-The API was fairly easy to use. It required a bit of self-formatting but wasn't too bad
+	-I have a much better understanding of the creation of APIs like this now. Every time I found
+	an error, it was something new that I'm happy I know now.
+
+What went wrong?
+	-Spent a long time on very minor errors - for example, window.onload was being called before the 
+	function was assigned to it, which I spent a long time trying to fix
+	-Late start due to having multiple other large projects due in a similar timeframe.
+
+If I were to continue, I would like to make it more intuitive in some aspects. You can remove pokemon from a team, 
+and moves from a pokemon, but to do so you must choose 'None' from the select list. It could definitely be more clear.
+The pages for viewing the teams and editing a team are also both on one page, so they look very similar.
+Consistency is good, but I would want to at least split these up into two pages if I had time. I would also clean up
+my code a bit. It's well commented but there are things that could follow DRY more.
+
+My above and beyond was the usage of the API, especially that I used the npm install version of it, and
+that I did all the API work through my own API. The formatting of all this data into the way that I wanted to
+use it, and the searching function through every species were also things I'm proud of.

@@ -5,6 +5,7 @@ const htmlHandler = require('./htmlResponses.js');
 const cssHandler = require('./cssResponses.js');
 const imgHandler = require('./imgResponses.js');
 const jsonHandler = require('./jsonResponses.js');
+const jsHandler = require('./jsResponses');
 
 const port = process.env.PORT || process.env.NODE_PORT || 3000;
 
@@ -13,6 +14,7 @@ const urlStruct = {
     '/': htmlHandler.getIndex,
     '/style.css': cssHandler.getCSS,
     '/transparent.gif': imgHandler.getTransparent,
+    '/main.js': jsHandler.getJS,
     '/getTeams': jsonHandler.getTeams,
     '/getTeam': jsonHandler.getTeam,
     '/getSpeciesData': jsonHandler.getSpeciesData,
