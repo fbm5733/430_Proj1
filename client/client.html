@@ -121,10 +121,10 @@
         addLink.textContent = "+";
         addLink.onclick = (e) => {teamCreateScreen();};
         teamFlex.append(addLink);
-    }
+    };
 
     //creates the team creation screen, called from new team but also handleTeam
-    const teamCreateScreen = (obj = {name: "", members: {}} /* default empty team object */) => {
+    const teamCreateScreen = (obj = {name: "New Team", members: {}} /* default empty team object */) => {
       //sets the team we are working with
       currentTeam = obj;
       
@@ -134,7 +134,8 @@
       //makes the save team link and appends it
       let saveLink = document.createElement("button");
       saveLink.className="saveTeam";
-      saveLink.textContent = "Save";
+      saveLink.textContent = "Save & Exit";
+      saveLink.onclick = sendPost;
       teamFlex.append(saveLink);
 
       //create the team div
@@ -146,12 +147,16 @@
       teamName.id = "nameInput";
       teamName.value = obj.name;
       //onchange, sets the current team name
-      teamName.onchange = (e) => { currentTeam.name = e.target.value; };
+      teamName.onchange = (e) => { 
+        currentTeam.name = e.target.value; 
+        document.querySelector("#title").textContent = e.target.value;
+      };
       teamDiv.append(teamName);
 
       let innerTeam = document.createElement("div");
       innerTeam.className = "innerTeam";
 
+      document.querySelector("#title").textContent = obj.name;
 
       for(let j = 0; j < 6; j++) {
         //get the team member from the object
@@ -211,7 +216,7 @@
       detailsDiv.id = "detailsDiv";
       detailsDiv.style.display = 'none';
       teamFlex.append(detailsDiv);
-    }
+    };
 
     //picks the member and sends the request
     const editMember = (e) => {
@@ -227,7 +232,7 @@
       else {
         showSpeciesData({id: id})
       }
-    }
+    };
 
     const showSpeciesData = (obj) => {
       let detailsDiv = document.querySelector("#detailsDiv");
@@ -243,6 +248,10 @@
           name: obj.data.name,
           image: obj.data.sprites.other['official-artwork'].front_default,
           number: obj.data.id,
+          abilityValue: "",
+          moveValues: [],
+          ability: "",
+          moves: [],
         }
 
         //change the image and name
@@ -264,7 +273,7 @@
       
       let speciesLabel = document.createElement("label");
       speciesLabel.className = "label";
-      speciesLabel.textContent = "Pokemon Name:"
+      speciesLabel.textContent = "Pokemon Name: "
       speciesDiv.append(speciesLabel);
 
       //the search will perform a search that will eventually populate 
@@ -293,15 +302,52 @@
       //dispatch event so the select list is filled
       speciesSearch.dispatchEvent(new Event("change"));
 
+      window.scrollTo(0,document.body.scrollHeight); //scroll to bottom to show the changes
+
       //if there's no data, then just ask for a pokemon
       if(!data) {
         return;
       }
 
+      //sets the data in the current species
+      currentSpecies.data = data;
+
       //if there is, do everything else
       speciesSelect.value = data.name;
       speciesSearch.value = data.name;
-    }
+
+
+      //create div for the next thing the user can change - the ability
+      let abilityDiv = document.createElement("div");
+      abilityDiv.className = "question";
+      
+      let abilityLabel = document.createElement("label");
+      abilityLabel.className = "label";
+      abilityLabel.textContent = "Ability: ";
+      abilityDiv.append(abilityLabel);
+      
+      //the select changes the species
+      let abilitySelect = document.createElement("select");
+      abilitySelect.className = "select";
+      abilitySelect.id = "abilitySelect";
+      abilitySelectSetup(abilitySelect, data);
+      abilitySelect.value = currentSpecies.selections.abilityValue;
+      //onchange event sets the currentspecies ability and the team member ability
+      abilitySelect.onchange = (e) => {
+        let newAbility = e.target.value;
+        let abilityText = e.target.options[e.target.selectedIndex].text;
+        currentSpecies.selections.abilityValue = newAbility;
+        currentTeam.members[obj.id].abilityValue = newAbility;
+        currentSpecies.selections.ability = abilityText;
+        currentTeam.members[obj.id].ability = abilityText;
+      }
+      abilityDiv.append(abilitySelect);
+
+      detailsDiv.append(abilityDiv);
+
+      //sets up the moves section, more complicated so it's its own function
+      movesSetup(detailsDiv, data, obj);
+    };
 
     //pupulates the select list
     const speciesSelectFunc = (obj) => {
@@ -316,13 +362,13 @@
           option.value = results[i];
           option.textContent = results[i];
           speciesSelectList.append(option);
-          speciesSelectList.onchange = (e) => {
-            //changes the species
-            sendGet(`/getSpeciesData?species=${e.target.value}&id=${currentSpecies.id}&newSpecies=yes`);
-          }
-          //if there's a selected species then set the current value
-          if(currentSpecies.selections) speciesSelectList.value = currentSpecies.selections.name;
         }
+        speciesSelectList.onchange = (e) => {
+          //changes the species
+          sendGet(`/getSpeciesData?species=${e.target.value}&id=${currentSpecies.id}&newSpecies=yes`);
+        }
+        //if there's a selected species then set the current value
+        if(currentSpecies.selections) speciesSelectList.value = currentSpecies.selections.name;
       } else if (speciesSelectList) {
         //don't have an onchange if it's null
         speciesSelectList.innerHTML = "";
@@ -333,7 +379,118 @@
         speciesSelectList.value = "";
         speciesSelectList.onchange = null;
       }
-    }
+    };
+
+    const abilitySelectSetup = (select, data) => {
+      //option to make a null decision
+      let option = document.createElement("option");
+      option.value = "";
+      option.textContent = "None";
+      select.append(option);
+
+      let abilities = data.abilities;
+      for(let i = 0; i<abilities.length; i++) {
+        //appends an option for each ability
+        let newOption = document.createElement("option");
+        newOption.value = i;
+        newOption.textContent = abilities[i].ability.name;
+        select.append(newOption);
+      }
+    };
+
+    const movesSetup = (detailsDiv, data, obj) => {
+      //makes 4 move setups
+      for(let i = 0; i < 4; i++) {
+        //create div for each of the moves
+        let moveDiv = document.createElement("div");
+        moveDiv.className = "question";
+        
+        let moveLabel = document.createElement("label");
+        moveLabel.className = "label";
+        moveLabel.textContent = `Move ${i + 1}: `;
+        moveDiv.append(moveLabel);
+
+        //the search will perform a search that will eventually populate
+        let moveSearch = document.createElement("input");
+        moveSearch.className = "search";
+        moveDiv.append(moveSearch);
+        
+        //the select changes the species
+        let moveSelect = document.createElement("select");
+        moveSelect.className = "select";
+        moveSelect.id = `moveSelect${i}`;
+        moveDiv.append(moveSelect);
+
+        //onchange event searches for the move
+        moveSearch.onchange = (e) => {
+          searchMove(moveSelect, data, i, obj.id, e.target.value.trim().toLowerCase());
+        }
+
+        //dispatch event so the select list is filled
+        moveSearch.dispatchEvent(new Event("change"));
+
+        //if there's a searchvalue display it
+        let searchValue = currentSpecies.selections.moves[i];
+        if(searchValue && searchValue !== "None"){
+          moveSearch.value = searchValue;
+        }
+
+        detailsDiv.append(moveDiv);
+      }
+    };
+
+    const searchMove = (select, data, moveNumber = 0, teamID = 0, searchString = "") => {
+      if(!data.moves || !select) return; //return if it won't work
+      //grabs all the moves that fit with the filter string
+      let results = data.moves
+        .map((move, index) => {
+          return {
+            name: move.move.name, 
+            id: index //need to save the index to store it if the user picks it
+          };
+        })
+        .filter((object) => object.name.includes(searchString)); //filters out to be only the ones searched for
+
+      if(results.length > 0) {
+        //adds each option to the select list
+        select.innerHTML = "";
+
+        //option to pick nothing
+        let defOption = document.createElement("option");
+        defOption.value = "";
+        defOption.textContent = "None";
+        select.append(defOption);
+
+        for(let i=0;i<results.length;i++) {
+          let option = document.createElement("option");
+          option.value = results[i].id;
+          option.textContent = results[i].name;
+          select.append(option);
+        }
+        //set up onchange event for the select list
+        select.onchange = (e) => {
+          //changes the move and move text
+          let moveChoice = e.target.value;
+          let moveText = e.target.options[e.target.selectedIndex].text;
+          currentSpecies.selections.moveValues[moveNumber] = moveChoice;
+          currentTeam.members[teamID].moveValues[moveNumber] = moveChoice;
+          currentSpecies.selections.moves[moveNumber] = moveText;
+          currentTeam.members[teamID].moves[moveNumber] = moveText;
+        }
+        //if there's a selected move in this slot, set the value (won't do anything if the selection isn't one of the options)
+        if(currentSpecies.selections.moveValues[moveNumber] || currentSpecies.selections.moveValues[moveNumber] === 0) 
+          { select.value = currentSpecies.selections.moveValues[moveNumber]; }
+      } else {
+        //don't have an onchange if it's null
+        select.innerHTML = "";
+        let option = document.createElement("option");
+        option.value = "";
+        option.textContent = "No Results Found";
+        select.append(option);
+        select.value = "";
+        select.onchange = null;
+      }
+    };
 
     //sends a get request with any url passed in
     const sendGet = (url) => {
@@ -353,9 +510,6 @@
     };
 
     const sendPost = (e) => {
-        //get if you're creating a new one (debug only)
-        const newTeam = document.querySelector("#postSelect").value;
-
         const xhr = new XMLHttpRequest();
 
         xhr.open("post", "/postTeam");
@@ -366,35 +520,55 @@
 
         //handles the response
         xhr.onload = () => handleResponse(xhr);
+        xhr.addEventListener('load', (e) => {
+          //This will essentially 'exit' the team editing page once it's done.
+          document.querySelector("#teamFlex").innerHTML = "Loading..."
+          sendGet("/getTeams");
+        })
 
         //creates the data and sends it
         const jsonData = {
-        name: "New Team",
-        members: [
-            {
-            number: 400,
-            ability: 0,
-            moves: [1, 2, 8]
-            }, //end of member 1
-            {
-            number: 130,
-            ability: 1,
-            moves: [3, 2, 1, 0]
-            } //end member 1
-        ] //end members
+        name: currentTeam.name,
+        members: [],
         }; //end json
 
-        //id sets to 0 if you want to update the first one. Again, debug only stuff
-        if(newTeam === "update") {
-          jsonData.id = 0;
-          jsonData.name = `Update number ${debugCounter}`;
-          debugCounter++;
+        if(currentTeam.id || currentTeam.id == 0) { 
+          jsonData.id = currentTeam.id
+        }
+
+        //loop through every possible team member
+        for(let i = 0; i<6; i++) {
+          let teamMember = currentTeam.members[i];
+          //only add it to the data if it is real
+          if(teamMember) {
+            let memberObject = {
+              name: teamMember.name,
+              image: teamMember.image,
+              number: teamMember.number,
+            }
+            //add the ability if it exists
+            let memberAbility = teamMember.abilityValue;
+            if(memberAbility || memberAbility === 0) {
+              memberObject.ability = memberAbility;
+            } else {
+              memberObject.ability = "";
+            }
+            //adds the moves if each of them exists
+            let memberMoves = [];
+            for(let j = 0; j<4; j++) {
+              let newMove = teamMember.moveValues[j];
+              if(newMove || newMove === 0) {
+                //pushes it if it exists
+                memberMoves.push(newMove);
+              }
+            }
+            memberObject.moves = memberMoves;
+            jsonData.members.push(memberObject);
+          }
         }
 
         xhr.send(JSON.stringify(jsonData));
 
-        //stupidness due to being a form
-        e.preventDefault();
         return false;
     };
 
@@ -408,6 +582,7 @@
         };
 
         //sends a request to get all the teams to display them
+        document.querySelector("#title").textContent = "Team List";
         document.querySelector("#teamFlex").innerHTML = "Loading..."
         sendGet("/getTeams");
     };

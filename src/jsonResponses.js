@@ -57,7 +57,7 @@ const speciesSearch = (request, response, params) => {
 
   // sets the string that will be searched for in all pokemon names
   let searchString = '';
-  if (params.q) searchString = decodeURIComponent(params.q).trim();
+  if (params.q) searchString = decodeURIComponent(params.q).trim().toLowerCase();
 
   const obj = { type: 'speciesSearch' };
 
@@ -173,6 +173,11 @@ const getTeam = (request, response, params) => {
     // This will let it check for when it's done and respond appropriately.
     obj.notDone = teams[params.id].members.length;
 
+    // special case for an empty team, respond immediately
+    if (teams[params.id].members.length === 0) {
+      respondJSON(request, response, status, obj);
+    }
+
     // iterate through the team members and find their names using the Pokedex,
     // adding them to the object when they are found.
     for (let i = 0; i < teams[params.id].members.length; i++) {
@@ -186,7 +191,11 @@ const getTeam = (request, response, params) => {
 
           newMember.name = res.name; // sets the name
           newMember.image = res.sprites.other['official-artwork'].front_default; // sets the image
-          newMember.ability = res.abilities[member.ability].ability.name; // sets the ability
+          if (member.ability || member.ability === 0) {
+            newMember.ability = res.abilities[member.ability].ability.name; // sets the ability
+          } else {
+            newMember.ability = '';
+          }
           newMember.moves = []; // sets the moves to empty
           // adds each move
           for (let j = 0; j < member.moves.length; j++) {
@@ -278,12 +287,11 @@ const postTeam = (request, response) => {
       message: 'Either a team name or at least one team member is required.',
     };
 
-    // basically only a bad request if the user gives us nothing
-    // we can allow empty teams
-    // if a team is made we can allow it to be saved and make a default name
-    if ((!params.name && !params.members) || (!params.name && params.members.count <= 0)) {
-      responseJSON.id = 'missingParams';
-      return respondJSON(request, response, 400, responseJSON);
+    // gives defaults to the name and members members will just be empty array
+    if (!params.name) {
+      params.name = 'New Team';
+    } else if (!params.members || params.members.count <= 0) {
+      params.members = [];
     }
 
     // next default it to creating a new one
